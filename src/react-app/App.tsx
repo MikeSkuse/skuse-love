@@ -1,66 +1,36 @@
-// src/App.tsx
+﻿import { useEffect, useState, type FormEvent } from 'react';
+import { BrowserRouter, Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
+import './App.css';
 
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import cloudflareLogo from "./assets/Cloudflare_Logo.svg";
-import honoLogo from "./assets/hono.svg";
-import "./App.css";
-
-function App() {
-	const [count, setCount] = useState(0);
-	const [name, setName] = useState("unknown");
-
-	return (
-		<>
-			<div>
-				<a href="https://vite.dev" target="_blank">
-					<img src={viteLogo} className="logo" alt="Vite logo" />
-				</a>
-				<a href="https://react.dev" target="_blank">
-					<img src={reactLogo} className="logo react" alt="React logo" />
-				</a>
-				<a href="https://hono.dev/" target="_blank">
-					<img src={honoLogo} className="logo cloudflare" alt="Hono logo" />
-				</a>
-				<a href="https://workers.cloudflare.com/" target="_blank">
-					<img
-						src={cloudflareLogo}
-						className="logo cloudflare"
-						alt="Cloudflare logo"
-					/>
-				</a>
-			</div>
-			<h1>Vite + React + Hono + Cloudflare</h1>
-			<div className="card">
-				<button
-					onClick={() => setCount((count) => count + 1)}
-					aria-label="increment"
-				>
-					count is {count}
-				</button>
-				<p>
-					Edit <code>src/App.tsx</code> and save to test HMR
-				</p>
-			</div>
-			<div className="card">
-				<button
-					onClick={() => {
-						fetch("/api/")
-							.then((res) => res.json() as Promise<{ name: string }>)
-							.then((data) => setName(data.name));
-					}}
-					aria-label="get name"
-				>
-					Name from API is: {name}
-				</button>
-				<p>
-					Edit <code>worker/index.ts</code> to change the name
-				</p>
-			</div>
-			<p className="read-the-docs">Click on the logos to learn more</p>
-		</>
-	);
+const events = [['12:30','Guest arrival'],['13:00','Ceremony'],['14:00','Photographs'],['15:00','Speeches'],['15:50','Wedding breakfast'],['18:00','Evening guests arrive'],['19:00','Cake cutting'],['19:30','Evening food'],['23:30','Last dance']];
+const themes = ['Radiator Springs','Pride Rock','Pizza Planet','Monstropolis','Agrabah','Notre Dame'];
+const icons: Record<string,string> = { home:'⌂', schedule:'◷', photos:'▧', more:'✳', seating:'♧', menu:'♢', venue:'⌖', faq:'?', upload:'↑', story:'♡', music:'♫', games:'✦', guestbook:'✎' };
+function Icon({name}:{name:string}) { return <span className="icon" aria-hidden="true">{icons[name] || '✦'}</span> }
+function useSettings() { const [data,setData]=useState<Record<string,string>>({}); useEffect(()=>{fetch('/api/settings').then(r=>r.ok?r.json():{}).then(setData).catch(()=>{});},[]); return data; }
+function currentEvent(stage?:string) {
+  if(stage && /^\d+$/.test(stage) && events[Number(stage)]) return {label:'Happening now', event:events[Number(stage)]};
+  const parts = new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
+  const get=(type:string)=>parts.find(p=>p.type===type)?.value || '';
+  const date=`${get('year')}-${get('month')}-${get('day')}`, time=`${get('hour')}:${get('minute')}`;
+  if(date<'2026-11-29') return {label:'The day begins',event:events[0]};
+  if(date>'2026-11-29') return {label:'A day to remember',event:null};
+  let index=-1; events.forEach((e,i)=>{ if(e[0]<=time) index=i; });
+  return index<0?{label:'Coming up',event:events[0]}:{label:'Happening now',event:events[index]};
 }
+function Header({title,eyebrow='MIKE & ANNA'}:{title:string,eyebrow?:string}) { return <header className="page-header"><span className="eyebrow">{eyebrow}</span><h1>{title}</h1><div className="ornament" aria-hidden="true">✦ <span>✧</span> ✦</div></header> }
+function CardLink({to,icon,title,sub}:{to:string,icon:string,title:string,sub:string}) {return <Link className="shortcut" to={to}><span className="shortcut-icon"><Icon name={icon}/></span><span><strong>{title}</strong><small>{sub}</small></span><span className="arrow">›</span></Link>}
+function Home(){const settings=useSettings(), current=currentEvent(settings.stage); return <><section className="hero"><div className="hero-top">THE WEDDING OF</div><img className="crest" src="/art/crest.png" alt=""/><h1>Mike <span>&</span> Anna</h1><div className="hero-date"><span></span> SUNDAY, 29 NOVEMBER 2026 <span></span></div><p>Our favourite day, with our favourite people.</p></section><section className="home-content"><div className="event-card"><div className="event-icon"><Icon name="schedule"/></div><div><span className="eyebrow">{current.label}</span><h2>{current.event?.[1] || 'Thank you for celebrating with us'}</h2>{current.event && <p>{current.event[0]} <span>·</span> Wedding day</p>}</div><Link to="/schedule" aria-label="View the schedule">→</Link></div><div className="section-heading"><div><span className="eyebrow">MAKE YOURSELF AT HOME</span><h2>Explore the day</h2></div><span aria-hidden="true">✧</span></div><div className="shortcut-grid"><CardLink to="/seating" icon="seating" title="Find your seat" sub="Your place at the table"/><CardLink to="/schedule" icon="schedule" title="Order of the day" sub="All the special moments"/><CardLink to="/photos" icon="photos" title="Wedding photos" sub="Share the memories"/><CardLink to="/menu" icon="menu" title="Food & drink" sub="See what's in store"/></div><div className="welcome"><span>✦</span><p>We’re so happy you’re here to celebrate with us.</p><span>✦</span></div></section></>}
+function Schedule(){const settings=useSettings(), current=currentEvent(settings.stage); return <><Header title="Order of the day"/><p className="intro">A little guide to the moments we’ll share together.</p><div className="date-pill">SUNDAY <b>29</b> NOVEMBER 2026</div><div className="timeline">{events.map((e,i)=><div className="timeline-row" key={e[0]}><time>{e[0]}</time><div className={'timeline-dot '+(current.event===e?'active':'')}></div><div><h2>{e[1]}</h2>{current.event===e && <span className="tag">{current.label}</span>}</div>{i===0 && <span className="timeline-star">✧</span>}</div>)}</div><p className="note">Timings may change a little on the day.</p></>}
+function Seating(){const [name,setName]=useState(''),[token,setToken]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false); async function submit(e:FormEvent){e.preventDefault();setBusy(true);setMessage('');try{const r=await fetch('/api/seating',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,token})});const d=await r.json();setMessage(r.ok?`Your table: ${d.theme}${d.display_number ? ` · Table ${d.display_number}` : ''}`:d.error)}catch{setMessage('Unable to look up your seat right now. Please try again.')}setBusy(false)} return <><Header title="Find your seat"/><p className="intro">A place has been saved just for you.</p><div className="panel"><div className="panel-icon">♧</div><h2>Let’s find your table</h2><p>Enter your name and the private access code shared with you.</p><form onSubmit={submit}><label htmlFor="name">Your name</label><input id="name" value={name} onChange={e=>setName(e.target.value)} required autoComplete="name"/><label htmlFor="code">Access code</label><input id="code" value={token} onChange={e=>setToken(e.target.value)} required autoComplete="off"/><button disabled={busy}>{busy?'Looking…':'Find my table'} <span>→</span></button></form>{message && <p className="result" role="status">{message}</p>}</div><h2 className="minor-heading">Our table themes</h2><div className="theme-list">{themes.map(t=><span key={t}>✧ &nbsp;{t}</span>)}</div><p className="note">Seating details will appear once they’ve been confirmed and shared.</p></>}
+function Menu(){return <><Header title="Food & drink"/><p className="intro">Good food, good company, and plenty to celebrate.</p>{[['01','Wedding breakfast'],['02','Evening food'],['03','Drinks']].map(([n,t])=><div className="content-card" key={t}><span className="number">{n}</span><div><h2>{t}</h2><p>Details coming soon</p></div><span className="card-flourish">✧</span></div>)}<div className="info-box"><strong>A note on allergens</strong><p>Please speak to the venue team about allergens and dietary requirements.</p></div></>}
+function Photos(){const [photos,setPhotos]=useState<{id:string}[]>([]),[failed,setFailed]=useState(false);useEffect(()=>{fetch('/api/photos').then(r=>{if(!r.ok)throw Error();return r.json()}).then(setPhotos).catch(()=>setFailed(true))},[]);return <><Header title="Wedding photos"/><p className="intro">The little moments, the big smiles, and everything in between.</p><Link className="primary-link" to="/photos/upload">↑ &nbsp; Share a photo</Link><div className="gallery-heading"><h2>Captured with love</h2><span>✧</span></div>{photos.length?<div className="gallery">{photos.map(p=><img key={p.id} src={`/api/photos/${p.id}`} alt="A guest's wedding photograph" loading="lazy"/>)}</div>:<div className="empty"><div>▧</div><h2>{failed?'Photos are unavailable right now':'The story starts here'}</h2><p>{failed?'Please try again when you have a connection.':'Approved photos will appear here after they’ve been reviewed.'}</p></div>}</>}
+function Upload(){const [message,setMessage]=useState(''),[busy,setBusy]=useState(false);async function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();const form=e.currentTarget;setBusy(true);setMessage('');try{const r=await fetch('/api/photos',{method:'POST',body:new FormData(form)});const d=await r.json();setMessage(r.ok?'Thank you! Your photo has been sent for approval.':d.error);if(r.ok)form.reset()}catch{setMessage('Upload failed. Please check your connection and try again.')}setBusy(false)}return <><Header title="Share a moment"/><p className="intro">We’d love to see the day through your eyes.</p><div className="panel"><div className="panel-icon">↑</div><h2>Add your photo</h2><p>JPEG, PNG or WebP, up to 8 MB.</p><form onSubmit={submit}><label htmlFor="photo">Choose a photo</label><input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required/><button disabled={busy}>{busy?'Uploading…':'Send for approval'}</button></form>{message&&<p className="result" role="status">{message}</p>}</div><p className="note">Photos are reviewed before appearing in the gallery. Please only share photos you have permission to share. Images may contain location information; remove it before uploading if you prefer.</p></>}
+function More(){return <><Header title="A little more"/><p className="intro">Everything else you need for our day together.</p><div className="more-list">{[['/venue','venue','Venue','Getting there and more'],['/faq','faq','FAQs','A few helpful answers'],['/story','story','Our story','A little about us'],['/guestbook','guestbook','Guestbook','Leave a little love'],['/games/photo-hunt','games','Photo hunt','Capture the day'],['/games/quiz','games','The quiz','How well do you know us?'],['/games/bingo','games','Wedding bingo','Play along'],['/music','music','Music','Songs for the celebration']].map(([to,icon,title,sub])=><CardLink key={to} {...{to,icon,title,sub}}/>)}</div></>}
+function Placeholder({title,text}:{title:string,text:string}){return <><Header title={title}/><div className="empty"><div>✧</div><h2>Coming soon</h2><p>{text}</p></div></>}
+function Venue(){const s=useSettings();return <><Header title="The venue"/><p className="intro">Everything you need to find your way to us.</p><div className="panel"><div className="panel-icon">⌖</div><h2>Venue details</h2><p className="preline">{s.venue || 'Details coming soon.'}</p></div></>}
+function FAQ(){const s=useSettings();return <><Header title="Good to know"/><p className="intro">A few helpful details for the day.</p><div className="content-card"><div><h2>Frequently asked questions</h2><p className="preline">{s.faq || 'Details coming soon.'}</p></div></div></>}
+function Admin(){const [token,setToken]=useState(''),[photos,setPhotos]=useState<{id:string,created_at:string}[]>([]),[stage,setStage]=useState(''),[venue,setVenue]=useState(''),[faq,setFaq]=useState(''),[msg,setMsg]=useState(''),[previews,setPreviews]=useState<Record<string,string>>({});const headers={Authorization:`Bearer ${token}`};async function load(){try{const r=await fetch('/api/admin/photos',{headers});if(!r.ok)throw Error();const data=await r.json();setPhotos(data);const settingsResponse=await fetch('/api/settings'); if(settingsResponse.ok){const settings=await settingsResponse.json();setStage(settings.stage || '');setVenue(settings.venue || '');setFaq(settings.faq || '');}const pairs=await Promise.all(data.map(async(p:{id:string})=>{const image=await fetch(`/api/admin/photos/${p.id}`,{headers});return [p.id,URL.createObjectURL(await image.blob())]}));setPreviews(Object.fromEntries(pairs));setMsg('Signed in.')}catch{setMsg('Could not sign in. Check your admin token.')}}async function moderate(id:string,status:string){const r=await fetch(`/api/admin/photos/${id}`,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({status})});if(r.ok){setPhotos(photos.filter(p=>p.id!==id));setMsg(`Photo ${status}.`)}else setMsg('Could not update photo.')}async function save(){const r=await fetch('/api/admin/settings',{method:'PUT',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({stage,venue,faq})});setMsg(r.ok?'Settings saved.':'Could not save settings.')}return <><Header title="Admin"/><div className="panel admin"><label htmlFor="admin-token">Admin token</label><input id="admin-token" type="password" value={token} onChange={e=>setToken(e.target.value)}/><button onClick={load}>Sign in / refresh</button><p role="status">{msg}</p><h2>Event and content</h2><label htmlFor="stage">Current event override</label><select id="stage" value={stage} onChange={e=>setStage(e.target.value)}><option value="">Automatic</option>{events.map((e,i)=><option key={e[0]} value={i}>{e[0]} · {e[1]}</option>)}</select><label htmlFor="venue">Venue details</label><textarea id="venue" value={venue} onChange={e=>setVenue(e.target.value)}/><label htmlFor="faq">FAQ details</label><textarea id="faq" value={faq} onChange={e=>setFaq(e.target.value)}/><button onClick={save}>Save settings</button><h2>Pending photos</h2>{photos.length===0?<p>No pending photos loaded.</p>:photos.map(p=><div className="moderation" key={p.id}>{previews[p.id]&&<img src={previews[p.id]} alt="Pending submission"/>}<p>{p.created_at}</p><div><button onClick={()=>moderate(p.id,'approved')}>Approve</button><button className="secondary" onClick={()=>moderate(p.id,'rejected')}>Reject</button></div></div>)}</div></>}
+function Shell(){const loc=useLocation();useEffect(()=>{window.scrollTo(0,0)},[loc.pathname]);return <><a className="skip" href="#main">Skip to content</a><div className="app-shell"><div className="topline"><Link to="/" aria-label="Mike and Anna home">M <span>&</span> A</Link><span>29 · 11 · 26</span></div><main id="main" className={loc.pathname==='/'?'home-main':'page-main'}><Routes><Route path="/" element={<Home/>}/><Route path="/schedule" element={<Schedule/>}/><Route path="/seating" element={<Seating/>}/><Route path="/menu" element={<Menu/>}/><Route path="/photos" element={<Photos/>}/><Route path="/photos/upload" element={<Upload/>}/><Route path="/more" element={<More/>}/><Route path="/venue" element={<Venue/>}/><Route path="/faq" element={<FAQ/>}/><Route path="/admin" element={<Admin/>}/>{[['/story','Our story'],['/guestbook','Guestbook'],['/music','Music'],['/games/photo-hunt','Photo hunt'],['/games/quiz','The quiz'],['/games/bingo','Wedding bingo']].map(([path,title])=><Route key={path} path={path} element={<Placeholder title={title} text="We’re putting the finishing touches on this page."/>}/>) }<Route path="*" element={<Placeholder title="Page not found" text="Please use the navigation to find your way back."/>}/></Routes></main><nav className="bottom-nav" aria-label="Main navigation">{[['/','home','Home'],['/schedule','schedule','Schedule'],['/photos','photos','Photos'],['/more','more','More']].map(([to,icon,label])=><NavLink key={to} to={to} end={to==='/'} className={({isActive})=>isActive?'active':''}><Icon name={icon}/><span>{label}</span></NavLink>)}</nav></div></>}
+export default function App(){return <BrowserRouter><Shell/></BrowserRouter>}
 
-export default App;
+

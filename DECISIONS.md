@@ -1,0 +1,9 @@
+﻿# Decisions and outstanding work
+
+- The supplied repository is the Cloudflare starter; no Wedding Wall source, existing schema, or credentials were present. This app uses new tables and a private R2 bucket; integration with the existing wall needs its repository and bindings.
+- Seating requires both a name and a unique private access code. Only a SHA-256 hash is stored; the lookup returns only the table theme and optional display number. No guest records are seeded. Distribute high-entropy codes privately.
+- Admin uses a server-verified secret bearer token, never a hidden route. Set a long random `ADMIN_TOKEN` as a Worker secret and additionally put `/admin` and `/api/admin/*` behind Cloudflare Access before production. The UI keeps the token only in memory.
+- Photos are private in R2 and pending by default. Approved photos are served through the Worker. Uploads have a size limit, file signature checks and D1-backed hourly rate limits. There is no virus scanning, EXIF stripping, automated resizing, Turnstile, retention policy or abuse reporting yet. Review these before allowing public uploads. Rejected objects remain in R2 until an operator removes them.
+- Venue, menu, guest records, story and other unconfirmed material remain empty. The confirmed schedule needs reconfirmation. Games, guestbook and music are intentionally placeholders until content and moderation policy are approved.
+- The schedule is based on Europe/London and has a manual stage override. Event-time editing and table management are not yet exposed in the admin UI; modify the source/migration until a management interface is added. Guest import is available through the authenticated API described in the README, not a CSV upload UI.
+- The environment used for this implementation did not have Node.js or npm on PATH, so dependency installation, build, automated tests and browser/mobile QA could not be run. The lockfile needs updating with `npm install` before deployment.
