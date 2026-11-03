@@ -1,11 +1,12 @@
-{
+﻿{
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "skuse-love",
   "main": "./src/worker/index.ts",
   "compatibility_date": "2025-10-08",
   "compatibility_flags": ["nodejs_compat"],
   "assets": { "directory": "./dist/client", "not_found_handling": "single-page-application" },
-  "d1_databases": [{ "binding": "DB", "database_name": "skuse-love", "database_id": "REPLACE_WITH_D1_ID", "migrations_dir": "migrations" }],
+  "d1_databases": [{ "binding": "DB", "database_name": "skuse-love", "migrations_dir": "migrations" }],
   "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "skuse-love-photos" }],
   "observability": { "enabled": true }
 }
+

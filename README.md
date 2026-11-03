@@ -4,11 +4,11 @@ A mobile-first React and Cloudflare Workers app for 29 November 2026. Confirmed 
 
 ## Local development
 
-Install Node.js 22 or later and npm, then run `npm install` (this also updates the lockfile). Create a D1 database and private R2 bucket with `npx wrangler d1 create skuse-love` and `npx wrangler r2 bucket create skuse-love-photos`. Replace `REPLACE_WITH_D1_ID` in `wrangler.json` with the D1 database ID. Apply the schema locally with `npx wrangler d1 migrations apply skuse-love --local`. Copy `.dev.vars.example` to `.dev.vars` and replace the example with a long random admin token. Run `npm run dev`. Use `npm run build` and `npm run lint` to verify.
+Install Node.js 22 or later and npm, then run `npm install` (this also updates the lockfile). For local development, apply the schema locally with `npx wrangler d1 migrations apply skuse-love --local`. Copy `.dev.vars.example` to `.dev.vars` and replace the example with a long random admin token. Run `npm run dev`. Use `npm run build` and `npm run lint` to verify.
 
 ## Deploy
 
-Authenticate Wrangler, create the production D1 database and R2 bucket, and set the bindings in `wrangler.json`. Run `npx wrangler d1 migrations apply skuse-love --remote`, then `npx wrangler secret put ADMIN_TOKEN`, and finally `npm run deploy`. Protect `/admin` and `/api/admin/*` with Cloudflare Access in addition to the application token. Test on a staging Worker first. Never commit `.dev.vars` or share the token in a URL. See `DECISIONS.md` for production gaps and unresolved decisions.
+Authenticate Wrangler and run `npm run build` followed by `npm run deploy`. Wrangler can provision the D1 database and R2 bucket automatically. Once provisioned, find the D1 database ID in the Cloudflare dashboard or with `npx wrangler d1 list`, add it as `database_id` to the D1 binding in `wrangler.json`, and run `npx wrangler d1 migrations apply skuse-love --remote` before using database-backed features. Set the admin secret with `npx wrangler secret put ADMIN_TOKEN` and redeploy with the database ID committed. If you already have a D1 database you intend to use, specify its ID before the first deployment instead of relying on automatic provisioning. Protect `/admin` and `/api/admin/*` with Cloudflare Access in addition to the application token. Test on a staging Worker first. Never commit `.dev.vars` or share the token in a URL. See `DECISIONS.md` for production gaps and unresolved decisions.
 
 ## Admin and seating import
 
@@ -21,3 +21,4 @@ R2 must stay private. Uploads start pending; only approved files are returned by
 ## Integration validation
 
 The integration test targets a running local Worker and writes a test guest and photo to its local D1/R2 state. Use disposable local emulator state, never production. Apply local migrations, start `npx wrangler dev --local --var ADMIN_TOKEN:local-test-admin-token`, then run `npm run test:integration`. Set `TEST_BASE_URL` and `TEST_ADMIN_TOKEN` if using a different address or token. The test covers admin authentication, seating privacy, image signature rejection, and photo moderation.
+
