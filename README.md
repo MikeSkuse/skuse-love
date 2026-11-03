@@ -17,3 +17,7 @@ Open `/admin`, enter the secret token, and sign in to moderate pending photos or
 ## Photo privacy
 
 R2 must stay private. Uploads start pending; only approved files are returned by the public API. The Worker checks JPEG, PNG and WebP signatures and limits upload size and frequency. Images retain metadata, including possible GPS data. Before opening uploads to guests, agree and publish a retention/deletion policy, arrange abuse reporting and malware review, and add metadata removal and stronger anti-spam controls. Service worker caching is limited to the app shell and does not cache API responses or uploaded images. Offline uploads are not queued.
+
+## Integration validation
+
+The integration test targets a running local Worker and writes a test guest and photo to its local D1/R2 state. Use disposable local emulator state, never production. Apply local migrations, start `npx wrangler dev --local --var ADMIN_TOKEN:local-test-admin-token`, then run `npm run test:integration`. Set `TEST_BASE_URL` and `TEST_ADMIN_TOKEN` if using a different address or token. The test covers admin authentication, seating privacy, image signature rejection, and photo moderation.
