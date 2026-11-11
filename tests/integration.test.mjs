@@ -1,6 +1,5 @@
 ﻿import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash, randomUUID } from 'node:crypto';
 
 const base = process.env.TEST_BASE_URL || 'http://127.0.0.1:8787';
 const token = process.env.TEST_ADMIN_TOKEN || 'local-test-admin-token';
@@ -8,20 +7,20 @@ const admin = { Authorization: `Bearer ${token}` };
 const json = { 'Content-Type': 'application/json' };
 const request = (path, options) => fetch(`${base}${path}`, options);
 
-test('private seating and moderated photo lifecycle', async () => {
+test('seating lookup and moderated photo lifecycle', async () => {
   let response = await request('/api/admin/photos');
   assert.equal(response.status, 401, 'admin routes reject anonymous requests');
   response = await request('/api/admin/photos', { headers: { Authorization: 'Bearer wrong' } });
   assert.equal(response.status, 401, 'admin routes reject incorrect tokens');
 
-  const id = randomUUID(), code = randomUUID();
-  const hash = createHash('sha256').update(code).digest('hex');
-  response = await request('/api/admin/guests', { method: 'POST', headers: { ...admin, ...json }, body: JSON.stringify({ guests: [{ id, name: 'Test Guest', table_id: 'theme_1', token_hash: hash }] }) });
-  assert.equal(response.status, 200);
-  response = await request('/api/seating', { method: 'POST', headers: json, body: JSON.stringify({ name: 'Test Guest', token: 'wrong' }) });
+  response = await request('/api/seating', { method: 'POST', headers: json, body: JSON.stringify({ name: '  mike skuse  ' }) });
+  assert.deepEqual(await response.json(), { table_number: 'TopTable' });
+  response = await request('/api/seating', { method: 'POST', headers: json, body: JSON.stringify({ name: 'Darlene Gibson' }) });
+  assert.deepEqual(await response.json(), { table_number: '1' });
+  response = await request('/api/seating', { method: 'POST', headers: json, body: JSON.stringify({ name: 'Unknown Guest' }) });
   assert.equal(response.status, 404);
-  response = await request('/api/seating', { method: 'POST', headers: json, body: JSON.stringify({ name: 'Test Guest', token: code }) });
-  assert.deepEqual(await response.json(), { theme: 'Radiator Springs', display_number: null });
+  response = await request('/api/seating', { method: 'POST', headers: json, body: JSON.stringify({ name: ' ' }) });
+  assert.equal(response.status, 400);
 
   const bad = new FormData(); bad.append('photo', new Blob(['not an image'], { type: 'image/png' }), 'fake.png');
   response = await request('/api/photos', { method: 'POST', body: bad });

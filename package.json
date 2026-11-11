@@ -34,7 +34,7 @@
         "typescript-eslint": "8.48.0",
         "vite": "^7.0.0",
         "vite-plugin-pwa": "^1.1.0",
-        "wrangler": "4.136.1"
+        "wrangler": "^4.160.1"
     },
     "private": true,
     "scripts": {

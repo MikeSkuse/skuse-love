@@ -21,9 +21,9 @@ app.get('/api/settings', async c => { const rows = await c.env.DB.prepare('SELEC
 app.post('/api/seating', async c => {
   const ip = c.req.header('CF-Connecting-IP') || 'unknown';
   if (await limited(c.env.DB, `seat:${ip}`, 20)) return jsonError('Please try again later.',429);
-  const body = await c.req.json<{name?:string,token?:string}>().catch(() => ({} as {name?:string,token?:string}));
-  if (!body.name || !body.token || body.name.length > 150 || body.token.length > 200) return jsonError('Enter your name and access code.',400);
-  const row = await c.env.DB.prepare('SELECT tables.theme, tables.display_number FROM guests JOIN tables ON guests.table_id=tables.id WHERE lower(trim(guests.name))=lower(trim(?)) AND guests.token_hash=? LIMIT 1').bind(body.name,await digest(body.token)).first();
+  const body = await c.req.json<{name?:string}>().catch(() => ({} as {name?:string}));
+  if (typeof body.name !== 'string' || !body.name.trim() || body.name.length > 150) return jsonError('Enter your name.',400);
+  const row = await c.env.DB.prepare('SELECT table_number FROM seating_plan WHERE lower(trim(name))=lower(trim(?)) LIMIT 1').bind(body.name).first();
   return row ? c.json(row) : jsonError('No matching seating found. Please check your details or ask the couple.',404);
 });
 app.get('/api/photos', async c => { const rows = await c.env.DB.prepare("SELECT id,created_at FROM photos WHERE status='approved' ORDER BY created_at DESC LIMIT 100").all(); return c.json(rows.results); });

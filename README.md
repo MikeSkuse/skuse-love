@@ -1,6 +1,6 @@
 ﻿# Mike & Anna's wedding companion
 
-A mobile-first React and Cloudflare Workers app for 29 November 2026. Confirmed schedule and table themes come from `codex/data/confirmed_wedding_details.json`; names, assignments, venue and menu are deliberately empty.
+A mobile-first React and Cloudflare Workers app for 29 November 2026. Seating assignments are supplied in `TablePlan.csv` and seeded by a database migration.
 
 ## Local development
 
@@ -12,7 +12,7 @@ Authenticate Wrangler and run `npm run build` followed by `npm run deploy`. Wran
 
 ## Admin and seating import
 
-Open `/admin`, enter the secret token, and sign in to moderate pending photos or update venue, FAQ and the current event override. The token is held in memory only. Until a CSV interface is added, import guest records via authenticated `POST /api/admin/guests` with JSON `{ "guests": [{ "id": "unique-id", "name": "Guest Name", "table_id": "theme_1", "token_hash": "SHA256_HEX" }] }`. Hash a unique, high-entropy access code with SHA-256 locally; send the code privately to that guest. Table IDs `theme_1` through `theme_6` follow the order in `codex/data/tables.csv`. Existing IDs are updated, not deleted. Do not include internal notes or dietary data. No guest list endpoint exists.
+Open `/admin`, enter the secret token, and sign in to moderate pending photos or update venue, FAQ and the current event override. The token is held in memory only. The seating lookup uses the assignments in migration `0002_seating_plan.sql`; apply migrations locally or remotely before using it. Changes to `TablePlan.csv` require a new migration to update the database. Guests can look up a table by name without an access code; there is no guest list endpoint. The legacy admin guest import does not update the seating plan.
 
 ## Photo privacy
 
@@ -20,5 +20,5 @@ R2 must stay private. Uploads start pending; only approved files are returned by
 
 ## Integration validation
 
-The integration test targets a running local Worker and writes a test guest and photo to its local D1/R2 state. Use disposable local emulator state, never production. Apply local migrations, start `npx wrangler dev --local --var ADMIN_TOKEN:local-test-admin-token`, then run `npm run test:integration`. Set `TEST_BASE_URL` and `TEST_ADMIN_TOKEN` if using a different address or token. The test covers admin authentication, seating privacy, image signature rejection, and photo moderation.
+The integration test targets a running local Worker and writes a test photo to its local D1/R2 state. Use disposable local emulator state, never production. Apply local migrations, start `npx wrangler dev --local --var ADMIN_TOKEN:local-test-admin-token`, then run `npm run test:integration`. Set `TEST_BASE_URL` and `TEST_ADMIN_TOKEN` if using a different address or token. The test covers admin authentication, seating lookup, image signature rejection, and photo moderation.
 
