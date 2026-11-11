@@ -14,6 +14,8 @@ Authenticate Wrangler and run `npm run build` followed by `npm run deploy`. Wran
 
 Open `/admin`, enter the secret token, and sign in to moderate pending photos or update venue, FAQ and the current event override. The token is held in memory only. The seating lookup uses the assignments in migration `0002_seating_plan.sql`; apply migrations locally or remotely before using it. Changes to `TablePlan.csv` require a new migration to update the database. Guests can search by partial name without an access code; matching names and table numbers are visible to anyone using the search. The legacy admin guest import does not update the seating plan.
 
+Table names come from `tables.theme`, matched using `tables.id` as the table number. Migration `0004_table_number_ids.sql` changes the six original theme IDs to numbers and updates any legacy guest references. It fails if a numeric ID already exists, so existing records are not overwritten. Add records with the appropriate numeric ID for any other named tables. Unmatched tables display their number alone.
+
 ## Photo privacy
 
 R2 must stay private. Uploads start pending; only approved files are returned by the public API. The Worker checks JPEG, PNG and WebP signatures and limits upload size and frequency. Images retain metadata, including possible GPS data. Before opening uploads to guests, agree and publish a retention/deletion policy, arrange abuse reporting and malware review, and add metadata removal and stronger anti-spam controls. Service worker caching is limited to the app shell and does not cache API responses or uploaded images. Offline uploads are not queued.

@@ -3,4 +3,4 @@
 
 .menu-card{border:1px solid #e7e8f0;border-radius:14px;padding:20px;margin-bottom:12px;background:#fff;box-shadow:0 8px 24px #3021460a}.menu-card h2{font-size:20px;margin:0 0 10px}.menu-card h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#716185;margin:0 0 8px}.menu-card p{font-size:13px;line-height:1.7;color:#747d8e;margin:4px 0}.menu-card strong{color:#4b4960}.menu-course+.menu-course{border-top:1px solid #edf0f6;margin-top:16px;padding-top:16px}
 
-.seat-results{list-style:none;margin:18px 0 0;padding:0;text-align:left}.seat-results li{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 0;border-top:1px solid #edf0f6;font-size:13px}.seat-results li strong{color:#33314a}.seat-results li span{color:#654987;white-space:nowrap}
+.seat-results{list-style:none;margin:18px 0 0;padding:0;text-align:left}.seat-results li{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 0;border-top:1px solid #edf0f6;font-size:13px}.seat-results li strong{color:#33314a}.seat-results li span{color:#654987;text-align:right}

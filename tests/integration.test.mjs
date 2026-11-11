@@ -23,9 +23,13 @@ test('seating lookup and moderated photo lifecycle', async () => {
   assert.equal(response.status, 400);
 
   response = await request('/api/seating/search', { method: 'POST', headers: json, body: JSON.stringify({ name: '  gIbSoN ' }) });
-  assert.deepEqual(await response.json(), [{ name: 'Darlene Gibson', table_number: '1' }, { name: 'Mark Gibson', table_number: '1' }]);
+  assert.deepEqual(await response.json(), [{ name: 'Darlene Gibson', table_number: '1', table_name: 'Radiator Springs' }, { name: 'Mark Gibson', table_number: '1', table_name: 'Radiator Springs' }]);
   response = await request('/api/seating/search', { method: 'POST', headers: json, body: JSON.stringify({ name: 'darlene gib' }) });
-  assert.deepEqual(await response.json(), [{ name: 'Darlene Gibson', table_number: '1' }]);
+  assert.deepEqual(await response.json(), [{ name: 'Darlene Gibson', table_number: '1', table_name: 'Radiator Springs' }]);
+  response = await request('/api/seating/search', { method: 'POST', headers: json, body: JSON.stringify({ name: 'Margaret Skuse' }) });
+  assert.deepEqual(await response.json(), [{ name: 'Margaret Skuse', table_number: '2', table_name: 'Pride Rock' }]);
+  response = await request('/api/seating/search', { method: 'POST', headers: json, body: JSON.stringify({ name: 'Wayne Taylor' }) });
+  assert.deepEqual(await response.json(), [{ name: 'Wayne Taylor', table_number: '7', table_name: null }]);
   response = await request('/api/seating/search', { method: 'POST', headers: json, body: JSON.stringify({ name: 'Unknown Guest' }) });
   assert.deepEqual(await response.json(), []);
   response = await request('/api/seating/search', { method: 'POST', headers: json, body: JSON.stringify({ name: ' ' }) });
