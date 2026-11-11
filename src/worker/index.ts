@@ -26,6 +26,14 @@ app.post('/api/seating', async c => {
   const row = await c.env.DB.prepare('SELECT table_number FROM seating_plan WHERE lower(trim(name))=lower(trim(?)) LIMIT 1').bind(body.name).first();
   return row ? c.json(row) : jsonError('No matching seating found. Please check your details or ask the couple.',404);
 });
+app.post('/api/seating/search', async c => {
+  const ip = c.req.header('CF-Connecting-IP') || 'unknown';
+  if (await limited(c.env.DB, `seat-search:${ip}`, 2000)) return jsonError('Please try again later.',429);
+  const body = await c.req.json<{name?:string}>().catch(() => ({} as {name?:string}));
+  if (typeof body.name !== 'string' || !body.name.trim() || body.name.length > 150) return jsonError('Enter your name.',400);
+  const rows = await c.env.DB.prepare('SELECT name, table_number FROM seating_plan WHERE instr(lower(name), lower(?)) > 0 ORDER BY name COLLATE NOCASE').bind(body.name.trim()).all<{name:string,table_number:string}>();
+  return c.json(rows.results);
+});
 app.get('/api/photos', async c => { const rows = await c.env.DB.prepare("SELECT id,created_at FROM photos WHERE status='approved' ORDER BY created_at DESC LIMIT 100").all(); return c.json(rows.results); });
 app.get('/api/photos/:id', async c => { const row = await c.env.DB.prepare("SELECT object_key,mime FROM photos WHERE id=? AND status='approved'").bind(c.req.param('id')).first<{object_key:string,mime:string}>(); if (!row) return jsonError('Not found',404); const obj = await c.env.PHOTOS.get(row.object_key); if (!obj) return jsonError('Not found',404); return new Response(obj.body,{headers:{'Content-Type':row.mime,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}}); });
 app.post('/api/photos', async c => {

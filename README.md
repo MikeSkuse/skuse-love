@@ -12,7 +12,7 @@ Authenticate Wrangler and run `npm run build` followed by `npm run deploy`. Wran
 
 ## Admin and seating import
 
-Open `/admin`, enter the secret token, and sign in to moderate pending photos or update venue, FAQ and the current event override. The token is held in memory only. The seating lookup uses the assignments in migration `0002_seating_plan.sql`; apply migrations locally or remotely before using it. Changes to `TablePlan.csv` require a new migration to update the database. Guests can look up a table by name without an access code; there is no guest list endpoint. The legacy admin guest import does not update the seating plan.
+Open `/admin`, enter the secret token, and sign in to moderate pending photos or update venue, FAQ and the current event override. The token is held in memory only. The seating lookup uses the assignments in migration `0002_seating_plan.sql`; apply migrations locally or remotely before using it. Changes to `TablePlan.csv` require a new migration to update the database. Guests can search by partial name without an access code; matching names and table numbers are visible to anyone using the search. The legacy admin guest import does not update the seating plan.
 
 ## Photo privacy
 

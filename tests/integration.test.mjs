@@ -22,6 +22,15 @@ test('seating lookup and moderated photo lifecycle', async () => {
   response = await request('/api/seating', { method: 'POST', headers: json, body: JSON.stringify({ name: ' ' }) });
   assert.equal(response.status, 400);
 
+  response = await request('/api/seating/search', { method: 'POST', headers: json, body: JSON.stringify({ name: '  gIbSoN ' }) });
+  assert.deepEqual(await response.json(), [{ name: 'Darlene Gibson', table_number: '1' }, { name: 'Mark Gibson', table_number: '1' }]);
+  response = await request('/api/seating/search', { method: 'POST', headers: json, body: JSON.stringify({ name: 'darlene gib' }) });
+  assert.deepEqual(await response.json(), [{ name: 'Darlene Gibson', table_number: '1' }]);
+  response = await request('/api/seating/search', { method: 'POST', headers: json, body: JSON.stringify({ name: 'Unknown Guest' }) });
+  assert.deepEqual(await response.json(), []);
+  response = await request('/api/seating/search', { method: 'POST', headers: json, body: JSON.stringify({ name: ' ' }) });
+  assert.equal(response.status, 400);
+
   const bad = new FormData(); bad.append('photo', new Blob(['not an image'], { type: 'image/png' }), 'fake.png');
   response = await request('/api/photos', { method: 'POST', body: bad });
   assert.equal(response.status, 400, 'invalid image bytes are rejected');
