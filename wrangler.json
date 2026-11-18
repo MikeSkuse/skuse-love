@@ -1,12 +1,38 @@
-﻿{
+{
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "skuse-love",
   "main": "./src/worker/index.ts",
   "compatibility_date": "2025-10-08",
-  "compatibility_flags": ["nodejs_compat"],
-  "assets": { "directory": "./dist/client", "not_found_handling": "single-page-application" },
-  "d1_databases": [{ "binding": "DB", "database_name": "skuse-love", "migrations_dir": "migrations" }],
-  "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "skuse-love-photos" }],
-  "observability": { "enabled": true }
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": "./dist/client",
+    "not_found_handling": "single-page-application"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "skuse-love",
+      "migrations_dir": "migrations"
+    },
+    {
+      "binding": "WEDDING_WALL_DB",
+      "database_name": "weddingwall",
+      "database_id": "719fa3a5-20d5-4d97-ad4b-0a190cf3bbd4"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "PHOTOS",
+      "bucket_name": "skuse-love-photos"
+    },
+    {
+      "binding": "WEDDING_WALL_MEDIA",
+      "bucket_name": "weddingwall"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
 }
-

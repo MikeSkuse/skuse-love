@@ -1,7 +1,8 @@
 ﻿import { Hono } from "hono";
 import { uploadToWeddingWall } from "./wedding-wall";
+import { latestWallPhotos, wallPhoto } from "./wall-gallery";
 
-type Bindings = { DB: D1Database; PHOTOS: R2Bucket; ADMIN_TOKEN?: string };
+type Bindings = { DB: D1Database; PHOTOS: R2Bucket; WEDDING_WALL_DB: D1Database; WEDDING_WALL_MEDIA: R2Bucket; ADMIN_TOKEN?: string };
 const app = new Hono<{ Bindings: Bindings }>();
 const jsonError = (message: string, status: 400 | 401 | 403 | 404 | 413 | 429 | 503) => new Response(JSON.stringify({ error: message }), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 const digest = async (s: string) => Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s))), b => b.toString(16).padStart(2, "0")).join("");
@@ -35,8 +36,17 @@ app.post('/api/seating/search', async c => {
   const rows = await c.env.DB.prepare('SELECT seating_plan.name, seating_plan.table_number, tables.theme AS table_name FROM seating_plan LEFT JOIN tables ON tables.id = seating_plan.table_number WHERE instr(lower(seating_plan.name), lower(?)) > 0 ORDER BY seating_plan.name COLLATE NOCASE').bind(body.name.trim()).all<{name:string,table_number:string,table_name:string|null}>();
   return c.json(rows.results);
 });
-app.get('/api/photos', async c => { const rows = await c.env.DB.prepare("SELECT id,created_at FROM photos WHERE status='approved' ORDER BY created_at DESC LIMIT 100").all(); return c.json(rows.results); });
-app.get('/api/photos/:id', async c => { const row = await c.env.DB.prepare("SELECT object_key,mime FROM photos WHERE id=? AND status='approved'").bind(c.req.param('id')).first<{object_key:string,mime:string}>(); if (!row) return jsonError('Not found',404); const obj = await c.env.PHOTOS.get(row.object_key); if (!obj) return jsonError('Not found',404); return new Response(obj.body,{headers:{'Content-Type':row.mime,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}}); });
+app.get('/api/photos', async c => {
+  try { return c.json(await latestWallPhotos(c.env.WEDDING_WALL_DB)); }
+  catch { return jsonError('Photos are unavailable right now.',503); }
+});
+app.get('/api/photos/:id', async c => {
+  try {
+    const object = await wallPhoto(c.env.WEDDING_WALL_DB, c.env.WEDDING_WALL_MEDIA, c.req.param('id'));
+    if (!object) return jsonError('Not found',404);
+    return new Response(object.body, { headers: { 'Content-Type': object.httpMetadata?.contentType || 'application/octet-stream', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
+  } catch { return jsonError('Photos are unavailable right now.',503); }
+});
 app.post('/api/photos', async c => {
   const ip = c.req.header('CF-Connecting-IP') || 'unknown';
   if (await limited(c.env.DB, `upload:${ip}`, 10)) return jsonError('Upload limit reached. Please try again later.',429);
