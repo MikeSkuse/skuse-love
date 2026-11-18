@@ -45,7 +45,8 @@
         "dev": "vite",
         "lint": "eslint .",
         "preview": "npm run build && vite preview",
-        "test:integration": "node --test tests/integration.test.mjs"
+        "test:integration": "node --test tests/integration.test.mjs",
+        "test:upload": "node --experimental-strip-types --test tests/wedding-wall.test.mjs"
     },
     "type": "module"
 }
