@@ -50,7 +50,7 @@ app.get('/api/photos/:id', async c => {
 app.post('/api/photos', async c => {
   const ip = c.req.header('CF-Connecting-IP') || 'unknown';
   if (await limited(c.env.DB, `upload:${ip}`, 10)) return jsonError('Upload limit reached. Please try again later.',429);
-  if (Number(c.req.header('Content-Length') || 0) > 8_500_000) return jsonError('Photo must be under 8 MB.',413);
+  if (Number(c.req.header('Content-Length') || 0) > 9_000_000) return jsonError('Photo must be under 8 MB.',413);
   const form = await c.req.formData().catch(() => null); const file = form?.get('photo');
   if (!(file instanceof File) || file.size > 8_000_000 || file.size < 12) return jsonError('Choose a JPEG, PNG or WebP under 8 MB.',400);
   const bytes = new Uint8Array(await file.arrayBuffer());
@@ -59,7 +59,13 @@ app.post('/api/photos', async c => {
   const webp = String.fromCharCode(...bytes.slice(0,4))==='RIFF' && String.fromCharCode(...bytes.slice(8,12))==='WEBP';
   const mime = jpeg ? 'image/jpeg' : png ? 'image/png' : webp ? 'image/webp' : '';
   if (!mime || file.type !== mime) return jsonError('That file is not a supported image.',400);
-  const result = await uploadToWeddingWall(file);
+  const thumbnail = form?.get('thumbnail');
+  if (thumbnail !== null && thumbnail !== undefined) {
+    if (!(thumbnail instanceof File) || thumbnail.type !== 'image/jpeg' || thumbnail.size < 12 || thumbnail.size > 500_000) return jsonError('Invalid thumbnail.',400);
+    const signature = new Uint8Array(await thumbnail.slice(0,3).arrayBuffer());
+    if (signature[0] !== 255 || signature[1] !== 216 || signature[2] !== 255) return jsonError('Invalid thumbnail.',400);
+  }
+  const result = await uploadToWeddingWall(file, fetch, thumbnail instanceof File ? thumbnail : undefined);
   if (!result.ok) return jsonError(result.error, result.status);
   return c.json({ok:true, status:result.status},201);
 });

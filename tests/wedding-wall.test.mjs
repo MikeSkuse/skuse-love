@@ -32,3 +32,15 @@ test('handles disabled uploads, per-file failure and network errors', async () =
   assert.equal(rejected.status, 503);
   assert.equal((await uploadToWeddingWall(file, async () => { throw new Error('offline'); })).status, 503);
 });
+
+
+test('forwards the generated thumbnail in WeddingWall’s thumbnail field', async () => {
+  const thumbnail = new File(['thumbnail'], 'thumbnail.jpg', { type: 'image/jpeg' });
+  let calls = 0;
+  const result = await uploadToWeddingWall(file, async (_url, options) => {
+    if (++calls === 1) return json(config);
+    assert.equal(await options.body.get('thumbPhotos').text(), 'thumbnail');
+    return json({ uploads: [{ job: { status: 'visible' } }] });
+  }, thumbnail);
+  assert.equal(result.ok, true);
+});
