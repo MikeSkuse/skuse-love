@@ -7,20 +7,21 @@ function ActionIcon({ type }: { type: 'camera' | 'upload' }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{type === 'camera' ? <><path d="M4 7h3l1.5-2h7L17 7h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"/><circle cx="12" cy="13" r="3.5"/></> : <><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></>}</svg>;
 }
 
-async function makeThumbnail(file: File): Promise<File | null> {
+async function resizeForUpload(file: File, longestEdge: number, quality: number, suffix: string): Promise<File> {
   let bitmap: ImageBitmap | undefined;
   try {
-    bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, 560 / Math.max(bitmap.width, bitmap.height));
+    bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    const scale = Math.min(1, longestEdge / Math.max(bitmap.width, bitmap.height));
     const canvas = document.createElement('canvas');
     canvas.width = Math.max(1, Math.round(bitmap.width * scale));
     canvas.height = Math.max(1, Math.round(bitmap.height * scale));
     const context = canvas.getContext('2d');
-    if (!context) return null;
+    if (!context) return file;
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.78));
-    return blob && blob.size <= 500_000 ? new File([blob], 'thumbnail.jpg', { type: 'image/jpeg' }) : null;
-  } catch { return null; }
+    const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+    const name = file.name.replace(/\.[^.]+$/, '') || 'photo';
+    return blob && blob.size <= 8_000_000 ? new File([blob], `${name}-${suffix}.jpg`, { type: 'image/jpeg', lastModified: file.lastModified }) : file;
+  } catch { return file; }
   finally { bitmap?.close(); }
 }
 
@@ -103,23 +104,25 @@ export default function Photos() {
     }
     setFiles(next); setMessage('');
   }
-  async function upload() {
-    if (!files.length || busy) return;
+  async function upload(selected: File[], fromCamera = false) {
+    if (!selected.length || busy) return;
     setBusy(true); setMessage('');
     const failed: File[] = [];
     let pending = 0, visible = 0;
-    for (const file of files) {
+    for (const file of selected) {
       try {
         const body = new FormData(); body.append('photo', file);
-        const thumbnail = await makeThumbnail(file);
-        if (thumbnail) body.append('thumbnail', thumbnail);
+        const display = await resizeForUpload(file, 1600, 0.86, 'display');
+        const thumbnail = await resizeForUpload(file, 560, 0.78, 'thumb');
+        body.append('display', display);
+        body.append('thumbnail', thumbnail);
         const response = await fetch('/api/photos', { method: 'POST', body });
         const result = await response.json();
         if (!response.ok) { failed.push(file); continue; }
         if (result.status === 'visible') visible++; else pending++;
       } catch { failed.push(file); }
     }
-    setFiles(failed);
+    setFiles(previous => fromCamera ? [...previous, ...failed] : failed);
     const successes = visible + pending;
     setMessage([successes ? `${successes} ${successes === 1 ? 'photo' : 'photos'} uploaded${pending ? ' (some may need approval)' : ''}.` : '', failed.length ? `${failed.length} could not be uploaded. Please try again.` : ''].filter(Boolean).join(' '));
     if (visible) void loadPhotos();
@@ -133,11 +136,11 @@ export default function Photos() {
       <button type="button" className="photo-action add-action" onClick={() => inputRef.current?.click()} disabled={busy}><ActionIcon type="upload"/><span>Add Photos</span></button>
       <input ref={inputRef} className="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e => { chooseFiles(e.target.files); e.target.value = ''; }}/>
     </div>
-    {files.length > 0 && <div className="photo-selection"><p>{files.length === 1 ? files[0].name : `${files.length} photos selected`}</p><button type="button" onClick={() => void upload()} disabled={busy}><ActionIcon type="upload"/>{busy ? 'Uploading…' : `Upload ${files.length === 1 ? 'photo' : 'photos'}`}</button></div>}
+    {files.length > 0 && <div className="photo-selection"><p>{files.length === 1 ? files[0].name : `${files.length} photos selected`}</p><button type="button" onClick={() => void upload(files)} disabled={busy}><ActionIcon type="upload"/>{busy ? 'Uploading…' : `Upload ${files.length === 1 ? 'photo' : 'photos'}`}</button></div>}
     {message && <p className="photo-message" role="status">{message}</p>}
     <p className="photo-hint">JPEG, PNG or WebP · up to 8 MB each · photos may be reviewed</p>
-    <div className="gallery-heading"><h2>Captured with love</h2><span>✧</span></div>
+    <div className="gallery-heading"><h2>Captured with love</h2><span>✧</span></div><p className="gallery-subheading">Some of the photos shared so far:</p>
     {photos.length ? <div className="gallery">{photos.map(photo => <img key={photo.id} src={`/api/photos/${photo.id}`} alt="A guest's wedding photograph" loading="lazy"/>)}</div> : <div className="empty photo-empty"><div><ActionIcon type="camera"/></div><h2>{galleryFailed ? 'Photos are unavailable right now' : 'The story starts here'}</h2><p>{galleryFailed ? 'Please try again when you have a connection.' : 'Shared photos will appear here.'}</p></div>}
-    {cameraOpen && <div className="camera-overlay" role="dialog" aria-modal="true" aria-label="Take a photo"><div className="camera-bar"><strong>Take a photo</strong><button type="button" onClick={closeCamera} aria-label="Close camera">×</button></div><div className="camera-frame">{captured && preview ? <img src={preview} alt="Your captured photo"/> : <video ref={videoRef} autoPlay playsInline muted/>}{cameraError && <p role="alert">{cameraError}</p>}</div><div className="camera-controls">{captured ? <><button type="button" onClick={() => void startCamera()}>Retake</button><button type="button" onClick={() => { setFiles([captured]); setMessage(''); closeCamera(); }}>Use photo</button></> : <button type="button" className="camera-shutter" onClick={() => void capture()} aria-label="Capture photo"><ActionIcon type="camera"/></button>}</div></div>}
+    {cameraOpen && <div className="camera-overlay" role="dialog" aria-modal="true" aria-label="Take a photo"><div className="camera-bar"><strong>Take a photo</strong><button type="button" onClick={closeCamera} aria-label="Close camera">×</button></div><div className="camera-frame">{captured && preview ? <img src={preview} alt="Your captured photo"/> : <video ref={videoRef} autoPlay playsInline muted/>}{cameraError && <p role="alert">{cameraError}</p>}</div><div className="camera-controls">{captured ? <><button type="button" onClick={() => void startCamera()}>Retake</button><button type="button" onClick={() => { const photo = captured; closeCamera(); void upload([photo], true); }}>Share photo</button></> : <button type="button" className="camera-shutter" onClick={() => void capture()} aria-label="Capture photo"><ActionIcon type="camera"/></button>}</div></div>}
   </section>;
 }

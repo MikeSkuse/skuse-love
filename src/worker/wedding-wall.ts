@@ -6,7 +6,7 @@ type UploadResult =
 
 // WeddingWall publishes its guest upload key via /api/config. Fetch it server-side
 // so the adapter follows key rotation without storing an admin or display key.
-export async function uploadToWeddingWall(file: File, send: typeof fetch = fetch, thumbnail?: File): Promise<UploadResult> {
+export async function uploadToWeddingWall(file: File, send: typeof fetch = fetch, thumbnail?: File, display?: File): Promise<UploadResult> {
   try {
     const configResponse = await send(`${weddingWall}/api/config`, { signal: AbortSignal.timeout(10000) });
     if (!configResponse.ok) throw new Error('WeddingWall configuration unavailable');
@@ -16,6 +16,7 @@ export async function uploadToWeddingWall(file: File, send: typeof fetch = fetch
 
     const form = new FormData();
     form.append('photos', file, file.name);
+    if (display) form.append('displayPhotos', display, display.name);
     if (thumbnail) form.append('thumbPhotos', thumbnail, thumbnail.name);
     const headers = new Headers();
     if (typeof config.uploadKey === 'string') headers.set('x-upload-key', config.uploadKey);

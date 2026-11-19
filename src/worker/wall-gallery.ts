@@ -1,5 +1,5 @@
 export async function latestWallPhotos(db: D1Database): Promise<{ id: string; created_at: string }[]> {
-  const rows = await db.prepare("SELECT id, created_at FROM media WHERE status = 'visible' AND (thumb_path IS NOT NULL OR display_path IS NOT NULL) ORDER BY created_at DESC, id DESC LIMIT 5").all<{ id: string; created_at: string }>();
+  const rows = await db.prepare("SELECT id, created_at FROM media WHERE status = 'visible' AND (thumb_path IS NOT NULL OR display_path IS NOT NULL) ORDER BY created_at DESC, id DESC LIMIT 6").all<{ id: string; created_at: string }>();
   return rows.results;
 }
 

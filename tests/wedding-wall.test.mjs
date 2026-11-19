@@ -34,13 +34,16 @@ test('handles disabled uploads, per-file failure and network errors', async () =
 });
 
 
-test('forwards the generated thumbnail in WeddingWall’s thumbnail field', async () => {
+test('forwards original, display, and thumbnail to WeddingWall', async () => {
   const thumbnail = new File(['thumbnail'], 'thumbnail.jpg', { type: 'image/jpeg' });
+  const display = new File(['display'], 'display.jpg', { type: 'image/jpeg' });
   let calls = 0;
   const result = await uploadToWeddingWall(file, async (_url, options) => {
     if (++calls === 1) return json(config);
+    assert.equal(await options.body.get('photos').text(), 'image');
+    assert.equal(await options.body.get('displayPhotos').text(), 'display');
     assert.equal(await options.body.get('thumbPhotos').text(), 'thumbnail');
     return json({ uploads: [{ job: { status: 'visible' } }] });
-  }, thumbnail);
+  }, thumbnail, display);
   assert.equal(result.ok, true);
 });

@@ -12,8 +12,8 @@ insert.run('hidden', '2026-12-02', 'hidden', 'thumb/hidden', null);
 const db = { prepare(sql) { let args = []; return { bind(...values) { args = values; return this; }, async all() { return { results: sqlite.prepare(sql).all(...args) }; }, async first() { return sqlite.prepare(sql).get(...args) || null; } }; } };
 const bucket = { async get(key) { return { key }; } };
 
-test('returns the five newest visible photos', async () => {
-  assert.deepEqual((await latestWallPhotos(db)).map(row => row.id), ['visible7', 'visible6', 'visible5', 'visible4', 'visible3']);
+test('returns the six newest visible photos', async () => {
+  assert.deepEqual((await latestWallPhotos(db)).map(row => row.id), ['visible7', 'visible6', 'visible5', 'visible4', 'visible3', 'visible2']);
 });
 
 test('serves a thumbnail only while the photo remains visible', async () => {
