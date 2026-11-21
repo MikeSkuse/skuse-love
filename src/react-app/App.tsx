@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Photos from './Photos';
 import { BrowserRouter, Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import './App.css';
@@ -58,10 +58,14 @@ function Music(){const playlists=[
 function Placeholder({title,text}:{title:string,text:string}){return <><Header title={title}/><div className="empty"><div>✧</div><h2>Coming soon</h2><p>{text}</p></div></>}
 function Venue(){
   const s=useSettings();
-  return <><Header title="The venue"/><p className="intro">Everything you need to find your way to us.</p>
+  const [plan,setPlan]=useState<{label:string;src:string}|null>(null);
+  const dialog=useRef<HTMLDialogElement>(null);
+  useEffect(()=>{if(plan && dialog.current && !dialog.current.open) dialog.current.showModal()},[plan]);
+  return <><Header title="The venue"/><p className="intro">How to get to and around our venue.</p>
     {s.venue && <div className="panel venue-details"><div className="panel-icon">⌖</div><h2>Venue details</h2><p className="preline">{s.venue}</p></div>}
     <section className="venue-section" aria-labelledby="venue-location"><h2 id="venue-location">Getting to The Pear Tree</h2><p>Find your way to the venue.</p><iframe className="venue-map" title="Map showing The Pear Tree venue" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2663.267482256027!2d-1.8638107000000002!3d51.581799700000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487143d46be22081%3A0x456cd1b126667393!2sThe%20Pear%20Tree!5e1!3m2!1sen!2suk!4v1795293884835!5m2!1sen!2suk" loading="lazy" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen/></section>
-    <section className="venue-section" aria-labelledby="venue-plans"><h2 id="venue-plans">Venue Maps</h2><p>Tap a floor plan to view it in full size.</p><div className="floor-plans">{[['Ground floor','/art/PearTreeGroundFloor.png'],['First floor','/art/PearTreeFirstFloor.png']].map(([label,src])=><figure key={src}><figcaption>{label}</figcaption><a href={src} target="_blank" rel="noreferrer" aria-label={`Open ${label.toLowerCase()} plan in a new tab`}><img src={src} alt={`The Pear Tree ${label.toLowerCase()} floor plan`} loading="lazy"/></a></figure>)}</div></section>
+    <section className="venue-section" aria-labelledby="venue-plans"><h2 id="venue-plans">Venue Maps</h2><p>Tap a floor plan to enlarge it.</p><div className="floor-plans">{[['Ground floor','/art/PearTreeGroundFloor.png'],['First floor','/art/PearTreeFirstFloor.png']].map(([label,src])=><figure key={src}><figcaption>{label}</figcaption><button type="button" onClick={()=>setPlan({label,src})} aria-label={`Enlarge ${label.toLowerCase()} floor plan`}><img src={src} alt={`The Pear Tree ${label.toLowerCase()} floor plan`} loading="lazy"/></button></figure>)}</div></section>
+    <dialog ref={dialog} className="plan-dialog" aria-labelledby="plan-dialog-title" onClose={()=>setPlan(null)}><div className="plan-dialog-bar"><h2 id="plan-dialog-title">{plan?.label} floor plan</h2><button type="button" onClick={()=>dialog.current?.close()} aria-label="Close floor plan">×</button></div>{plan && <div className="plan-dialog-image"><img src={plan.src} alt={`The Pear Tree ${plan.label.toLowerCase()} floor plan`}/></div>}</dialog>
   </>;
 }
 function FAQ(){
