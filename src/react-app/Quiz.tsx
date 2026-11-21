@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 
 const questions = [
   { question: 'When did Mike and Anna first meet?', answers: ['February 2021', 'June 2022', 'November 2022', 'January 2023'], correct: 'November 2022', feedback: 'Mike and Anna first met in November 2022, almost exactly four years before their wedding!' },
-  { question: 'Where did Mike and Anna go on their first date?', answers: ['Lydiard Park', 'Coate Water', 'Cotswold Water Park', 'Barbury Castle'], correct: 'Coate Water', feedback: 'They walked around Coate Water several times because neither wanted the date to end.' },
-  { question: 'How many laps of the lake did they approximately walk on their first date?', answers: ['1–2', '3–4', '5–6', '9–10'], correct: '5–6', feedback: 'They just kept walking and talking!' },
-  { question: 'How many times had Mike and Anna visited Walt Disney World together before their wedding?', answers: ['Once', 'Twice', 'Three times', 'Four times'], correct: 'Twice', feedback: "They've already enjoyed two magical trips to Walt Disney World together." },
-  { question: 'Which country have Mike and Anna visited twice to go to LEGOLAND?', answers: ['Germany', 'France', 'Denmark', 'Sweden'], correct: 'Denmark', feedback: "They've visited LEGOLAND Billund, the original LEGOLAND, twice together." },
+  { question: 'Where did Mike and Anna go on their first date?', answers: ['Lydiard Park', 'Coate Water', 'Cotswold Water Park', 'Barbury Castle'], correct: 'Coate Water', feedback: 'It was a bit of a rainy one!' },
+  { question: 'Which Disney film is NOT represented by a wedding table?', answers: ['Cars', 'The Incredibles', 'Frozen', 'Aladdin'], correct: 'Frozen', feedback: 'There’s no Arendelle table at this wedding!' },
+  { question: 'Where did Mike propose to Anna?', answers: ['Walt Disney World', 'Disneyland Paris', 'Coate Water', 'LEGOLAND Billund'], correct: 'LEGOLAND Billund', feedback: 'He proposed on the roof of LEGO House which is shaped like LEGO bricks' },
+  { question: 'What is Mike’s favourite Disney attraction?', answers: ['Cosmic Rewind', 'Tower of Terror', 'Rise of the Resistance', 'Flight of Passage'], correct: 'Tower of Terror', feedback: 'Both the Disney World and Disneyland Paris versions!' },
   { question: "What is Eva's middle name?", answers: ['Rose', 'Elizabeth', 'Marie', 'Marlene'], correct: 'Marlene', feedback: 'Eva Marlene was born on 13 February 2026.' },
   { question: "What was Eva's nickname before she was born?", answers: ['Peanut', 'Bobette', 'Jellybean', 'Mini Skuse'], correct: 'Bobette', feedback: 'Before she was Eva, she was affectionately known as Bobette!' },
   { question: "Which of these is NOT the name of one of Mike and Anna's dogs?", answers: ['Rolo', 'Trixie', 'Molly', 'Bella'], correct: 'Bella', feedback: 'Their three dogs are Rolo, Trixie and Molly.' },
-  { question: "What are Mike and Anna's favourite sweets, featured in the wedding favours?", answers: ['Spogs and white jazzies', 'Jelly Babies and Love Hearts', 'Milk Bottles and Haribo', 'Flying Saucers and Dolly Mixtures'], correct: 'Spogs and white jazzies', feedback: 'Mike loves spogs, while Anna loves white jazzies.' },
+  { question: "What are Mike and Anna's favourite sweets?", answers: ['Spogs and white jazzies', 'Cola bottles and Bonbons', 'Wine gums and Haribo', 'Flying Saucers and Mini Gems'], correct: 'Spogs and white jazzies', feedback: 'Mike loves spogs, while Anna loves white jazzies.' },
   { question: "Which Disney Pixar film inspired the name of the wedding's top table, Axiom?", answers: ['Toy Story', 'The Incredibles', 'WALL-E', 'Monsters, Inc.'], correct: 'WALL-E', feedback: 'The Axiom is the spaceship from WALL-E!' },
 ];
 
