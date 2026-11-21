@@ -64,7 +64,6 @@ export default function Quiz() {
       <h2 id="quiz-result-title">{resultTitle}</h2><p>{resultMessage}</p>
       <button className="quiz-primary" type="button" onClick={restart}>Play again</button><Link className="quiz-home" to="/">Return to the wedding homepage</Link>
     </section> : <>
-      <p className="intro">A little quiz about our favourite memories. How many will you get right?</p>
       <div className="quiz-progress"><div><span>Question {index + 1} of {questions.length}</span><strong>Score: {score}</strong></div><div className="quiz-progress-track" role="progressbar" aria-label="Quiz progress" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={index + (selected !== null ? 1 : 0)}><div style={{ width: `${(index + (selected !== null ? 1 : 0)) * 10}%` }}/></div></div>
       <section className="quiz-card" aria-labelledby="quiz-question"><span className="quiz-question-label">QUESTION {String(index + 1).padStart(2, '0')} <span aria-hidden="true">✧</span></span><h2 id="quiz-question">{current.question}</h2>
         <div className="quiz-answers">{order[index].map((option, i) => {
