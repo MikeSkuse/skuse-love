@@ -130,7 +130,7 @@ export default function Photos() {
   }
   return <section className="photos-page">
     <header className="page-header"><span className="eyebrow">MIKE &amp; ANNA</span><h1>Wedding photos</h1><div className="ornament" aria-hidden="true">✦ <span>✧</span> ✦</div></header>
-    <p className="intro">Share the day through your eyes.</p>
+    <p className="intro">We'd love to see your photos from the day!</p>
     <div className="photo-actions">
       <button type="button" className="photo-action camera-action" onClick={() => void startCamera()} disabled={busy}><ActionIcon type="camera"/><span>Take Photo</span></button>
       <button type="button" className="photo-action add-action" onClick={() => inputRef.current?.click()} disabled={busy}><ActionIcon type="upload"/><span>Add Photos</span></button>
