@@ -108,7 +108,7 @@ export default function Photos() {
     if (!selected.length || busy) return;
     setBusy(true); setMessage('');
     const failed: File[] = [];
-    let pending = 0, visible = 0;
+    let pending = 0, visible = 0, rateLimited = false;
     for (const file of selected) {
       try {
         const body = new FormData(); body.append('photo', file);
@@ -118,13 +118,13 @@ export default function Photos() {
         body.append('thumbnail', thumbnail);
         const response = await fetch('/api/photos', { method: 'POST', body });
         const result = await response.json();
-        if (!response.ok) { failed.push(file); continue; }
+        if (!response.ok) { if (response.status === 429) rateLimited = true; failed.push(file); continue; }
         if (result.status === 'visible') visible++; else pending++;
       } catch { failed.push(file); }
     }
     setFiles(previous => fromCamera ? [...previous, ...failed] : failed);
     const successes = visible + pending;
-    setMessage([successes ? `${successes} ${successes === 1 ? 'photo' : 'photos'} uploaded${pending ? ' (some may need approval)' : ''}.` : '', failed.length ? `${failed.length} could not be uploaded. Please try again.` : ''].filter(Boolean).join(' '));
+    setMessage([successes ? `${successes} ${successes === 1 ? 'photo' : 'photos'} uploaded${pending ? ' (some may need approval)' : ''}.` : '', failed.length ? `${failed.length} could not be uploaded. ${rateLimited ? "The upload limit was reached; please try again later." : "Please try again."}` : ''].filter(Boolean).join(' '));
     if (visible) void loadPhotos();
     setBusy(false);
   }

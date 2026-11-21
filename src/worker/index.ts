@@ -49,7 +49,7 @@ app.get('/api/photos/:id', async c => {
 });
 app.post('/api/photos', async c => {
   const ip = c.req.header('CF-Connecting-IP') || 'unknown';
-  if (await limited(c.env.DB, `upload:${ip}`, 10)) return jsonError('Upload limit reached. Please try again later.',429);
+  if (await limited(c.env.DB, `upload:${ip}`, 600)) return jsonError('Upload limit reached. Please try again later.',429);
   if (Number(c.req.header('Content-Length') || 0) > 24_500_000) return jsonError('Photo must be under 8 MB.',413);
   const form = await c.req.formData().catch(() => null); const file = form?.get('photo');
   if (!(file instanceof File) || file.size > 8_000_000 || file.size < 12) return jsonError('Choose a JPEG, PNG or WebP under 8 MB.',400);
