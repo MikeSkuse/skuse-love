@@ -4,7 +4,7 @@ import Quiz from './Quiz';
 import { BrowserRouter, Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import './App.css';
 
-const events = [['12:30','Guest arrival'],['13:00','Ceremony'],['14:00','Photographs'],['15:00','Speeches'],['15:50','Wedding breakfast'],['18:00','Evening guests arrive'],['19:00','Cake cutting'],['19:30','Evening food'],['20:15','First dance'],['23:30','Last dance']];
+const events = [['12:30','Guest arrival'],['13:00','Ceremony'],['14:00','Photographs'],['15:00','Speeches'],['15:50','Wedding breakfast'],['18:00','Evening guests arrive'],['18:30','DJ Begins'],['19:00','Cake cutting'],['19:30','Evening food'],['20:15','First dance'],['23:30','Last dance']];
 const icons: Record<string,string> = { home:'⌂', schedule:'◷', more:'✳', venue:'⌖', faq:'?', upload:'↑', story:'♡', music:'♫', games:'✦' };
 function Icon({name}:{name:string}) {
   const shape = name === 'photos' ? <><path d="M4 7h3l1.5-2h7L17 7h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"/><circle cx="12" cy="13" r="3.5"/></> : name === 'seating' ? <><path d="M6 13V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8"/><path d="M5 13h14v3H5zM7 16v5m10-5v5"/></> : name === 'quiz' ? <><path d="M9 18h6M10 21h4M8.5 14.8a6 6 0 1 1 7 0c-.9.6-1.5 1.4-1.5 2.2h-4c0-.8-.6-1.6-1.5-2.2Z"/></> : name === 'menu' ? <><circle cx="12" cy="12" r="5"/><path d="M3 3v6a2 2 0 0 0 4 0V3M5 3v18M21 3c-2 1-3 4-3 7h3v11M21 3v7"/></> : null;
