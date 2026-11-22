@@ -68,7 +68,10 @@ app.post('/api/photos', async c => {
     const derivativeMime = data[0]===255 && data[1]===216 && data[2]===255 ? 'image/jpeg' : [137,80,78,71,13,10,26,10].every((v,i)=>data[i]===v) ? 'image/png' : String.fromCharCode(...data.slice(0,4))==='RIFF' && String.fromCharCode(...data.slice(8,12))==='WEBP' ? 'image/webp' : '';
     if (!derivativeMime || derivative.type !== derivativeMime) return jsonError('Invalid image derivative.',400);
   }
-  const result = await uploadToWeddingWall(file, fetch, thumbnail instanceof File ? thumbnail : undefined, display instanceof File ? display : undefined);
+  const uploaderName = form?.get('uploaderName');
+  const caption = form?.get('caption');
+  if ((uploaderName != null && typeof uploaderName !== 'string') || (caption != null && typeof caption !== 'string')) return jsonError('Invalid photo details.',400);
+  const result = await uploadToWeddingWall(file, fetch, thumbnail instanceof File ? thumbnail : undefined, display instanceof File ? display : undefined, { uploaderName: uploaderName || '', caption: caption || '' });
   if (!result.ok) return jsonError(result.error, result.status);
   return c.json({ok:true, status:result.status},201);
 });

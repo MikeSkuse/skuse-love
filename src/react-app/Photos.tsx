@@ -30,6 +30,8 @@ export default function Photos() {
   const [galleryFailed, setGalleryFailed] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [message, setMessage] = useState('');
+  const [uploaderName, setUploaderName] = useState('');
+  const [caption, setCaption] = useState('');
   const [busy, setBusy] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState('');
@@ -112,6 +114,7 @@ export default function Photos() {
     for (const file of selected) {
       try {
         const body = new FormData(); body.append('photo', file);
+        body.append('uploaderName', uploaderName); body.append('caption', caption);
         const display = await resizeForUpload(file, 1600, 0.86, 'display');
         const thumbnail = await resizeForUpload(file, 560, 0.78, 'thumb');
         body.append('display', display);
@@ -131,6 +134,10 @@ export default function Photos() {
   return <section className="photos-page">
     <header className="page-header"><span className="eyebrow">MIKE &amp; ANNA</span><h1>Wedding photos</h1><div className="ornament" aria-hidden="true">✦ <span>✧</span> ✦</div></header>
     <p className="intro">We'd love to see your photos from the day!</p>
+    <div className="photo-details">
+      <input aria-label="Your name (optional)" placeholder="Your name (optional)" autoComplete="name" value={uploaderName} onChange={e => setUploaderName(e.target.value)} disabled={busy}/>
+      <input aria-label="Caption or message (optional)" placeholder="Caption or message (optional)" value={caption} onChange={e => setCaption(e.target.value)} disabled={busy}/>
+    </div>
     <div className="photo-actions">
       <button type="button" className="photo-action camera-action" onClick={() => void startCamera()} disabled={busy}><ActionIcon type="camera"/><span>Take Photo</span></button>
       <button type="button" className="photo-action add-action" onClick={() => inputRef.current?.click()} disabled={busy}><ActionIcon type="upload"/><span>Add Photos</span></button>

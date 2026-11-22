@@ -43,7 +43,9 @@ test('forwards original, display, and thumbnail to WeddingWall', async () => {
     assert.equal(await options.body.get('photos').text(), 'image');
     assert.equal(await options.body.get('displayPhotos').text(), 'display');
     assert.equal(await options.body.get('thumbPhotos').text(), 'thumbnail');
+    assert.equal(options.body.get('uploaderName'), 'Alex');
+    assert.equal(options.body.get('caption'), 'A lovely day');
     return json({ uploads: [{ job: { status: 'visible' } }] });
-  }, thumbnail, display);
+  }, thumbnail, display, { uploaderName: 'Alex', caption: 'A lovely day' });
   assert.equal(result.ok, true);
 });
