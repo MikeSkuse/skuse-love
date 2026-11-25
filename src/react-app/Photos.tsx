@@ -33,6 +33,7 @@ export default function Photos() {
   const [uploaderName, setUploaderName] = useState('');
   const [caption, setCaption] = useState('');
   const [busy, setBusy] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState('');
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -108,10 +109,11 @@ export default function Photos() {
   }
   async function upload(selected: File[], fromCamera = false) {
     if (!selected.length || busy) return;
-    setBusy(true); setMessage('');
+    setBusy(true); setMessage(''); setUploadProgress({ current: 1, total: selected.length });
     const failed: File[] = [];
     let pending = 0, visible = 0, rateLimited = false;
-    for (const file of selected) {
+    for (const [index, file] of selected.entries()) {
+      setUploadProgress({ current: index + 1, total: selected.length });
       try {
         const body = new FormData(); body.append('photo', file);
         body.append('uploaderName', uploaderName); body.append('caption', caption);
@@ -144,6 +146,7 @@ export default function Photos() {
       <input ref={inputRef} className="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e => { chooseFiles(e.target.files); e.target.value = ''; }}/>
     </div>
     {files.length > 0 && <div className="photo-selection"><p>{files.length === 1 ? files[0].name : `${files.length} photos selected`}</p><button type="button" onClick={() => void upload(files)} disabled={busy}><ActionIcon type="upload"/>{busy ? 'Uploading…' : `Upload ${files.length === 1 ? 'photo' : 'photos'}`}</button></div>}
+    {busy && <div className="photo-progress" role="status"><p>{uploadProgress.total > 1 ? `Uploading photo ${uploadProgress.current} of ${uploadProgress.total}…` : 'Uploading your photo…'} Please keep this page open.</p><progress aria-label="Photo upload in progress" /></div>}
     {message && <p className="photo-message" role="status">{message}</p>}
     <p className="photo-hint">JPEG, PNG or WebP · up to 8 MB each · photos may be reviewed</p>
     <div className="gallery-heading"><h2>Captured with love</h2><span>✧</span></div><p className="gallery-subheading">Some of the photos shared so far:</p>
