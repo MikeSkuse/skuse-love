@@ -37,3 +37,7 @@ export function shuffleSuggestions(entries: string[], random: () => number = Mat
   }
   return shuffled;
 }
+
+export function availablePhotoHuntSuggestions(suggestions: string[][] | null, phase: number, completed: { phase: number; text: string }[]): string[] {
+  return (suggestions?.[phase] || []).filter(text => !completed.some(item => item.phase === phase && item.text === text)).slice(0, 3);
+}

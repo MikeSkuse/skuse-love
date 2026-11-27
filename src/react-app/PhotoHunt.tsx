@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import PrizeClaim from './PrizeClaim';
-import { photoHuntPhases, shuffleSuggestions } from '../shared/photo-hunt';
+import { photoHuntPhases, shuffleSuggestions, availablePhotoHuntSuggestions } from '../shared/photo-hunt';
 
 type Completed = { phase: number; text: string };
 const storageKey = 'wedding-photo-hunt-completed-v1';
@@ -34,11 +34,11 @@ export default function PhotoHunt({ phase }: { phase: number }) {
       return next;
     });
   }
-  const available = (suggestions?.[phase] || []).filter(text => !completed.some(item => item.phase === phase && item.text === text)).slice(0, 3);
+  const available = availablePhotoHuntSuggestions(suggestions, phase, completed);
   return <div className="photo-hunt">
     <header className="page-header"><span className="eyebrow">A LITTLE WEDDING DAY MAGIC</span><h1>Photo hunt</h1><div className="ornament" aria-hidden="true">✦ <span>✧</span> ✦</div></header>
     <p className="intro">Capture the little moments throughout the day. Tick each suggestion when you’ve taken your photo.</p>
-    <section aria-labelledby="hunt-suggestions"><div className="hunt-heading"><div><span className="eyebrow">{photoHuntPhases[phase]}</span><h2 id="hunt-suggestions">Your photo suggestions</h2></div><span aria-hidden="true">✧</span></div>
+    <section aria-labelledby="hunt-suggestions"><div className="hunt-heading"><div><h2 id="hunt-suggestions">Your photo suggestions</h2><span className="eyebrow hunt-phase">{photoHuntPhases[phase]}</span></div><span aria-hidden="true">✧</span></div>
       {error && <p role="alert" className="note">Could not refresh suggestions. Please check your connection.</p>}
       {!suggestions && !error ? <p role="status" className="note">Loading suggestions…</p> : available.length ? <div className="hunt-list">{available.map(text => <label className="hunt-item" key={text}><input type="checkbox" checked={false} onChange={() => toggle({ phase, text })}/><span>{text}</span></label>)}</div> : suggestions && <p className="note">You’ve completed all the suggestions for this part of the day.</p>}
     </section>
