@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { defaultBingoEntries } from "./bingo";
-import { defaultPhotoHunt, photoHuntPhases } from "../shared/photo-hunt";
+import { defaultPhotoHunt, photoHuntPhases, groupPhotoHuntSuggestions } from "../shared/photo-hunt";
 import { uploadToWeddingWall } from "./wedding-wall";
 import { latestWallPhotos, wallPhoto } from "./wall-gallery";
 
@@ -36,11 +36,11 @@ app.put('/api/admin/bingo', async c => {
 });
 app.get('/api/photo-hunt', async c => {
   const row = await c.env.DB.prepare('SELECT value FROM settings WHERE key=?').bind('photo_hunt').first<{value:string}>();
-  return c.json(row ? JSON.parse(row.value) : defaultPhotoHunt);
+  return c.json(row ? groupPhotoHuntSuggestions(JSON.parse(row.value)) : defaultPhotoHunt);
 });
 app.put('/api/admin/photo-hunt', async c => {
   const body = await c.req.json<{phases?:unknown}>().catch(() => null);
-  if (!body || !Array.isArray(body.phases) || body.phases.length !== photoHuntPhases.length || body.phases.some((group: unknown) => !Array.isArray(group) || group.length < 3 || group.length > 100 || group.some((text: unknown) => typeof text !== 'string' || !text.trim() || text.trim().length > 150))) return jsonError('Each stage needs 3 to 100 suggestions, each up to 150 characters.',400);
+  if (!body || !Array.isArray(body.phases) || body.phases.length !== photoHuntPhases.length || body.phases.some((group: unknown) => !Array.isArray(group) || group.length < 3 || group.length > 600 || group.some((text: unknown) => typeof text !== 'string' || !text.trim() || text.trim().length > 150))) return jsonError('Each stage needs 3 to 600 suggestions, each up to 150 characters.',400);
   const phases: string[][] = body.phases.map((group: string[]) => group.map(text => text.trim()));
   if (phases.some(group => new Set(group.map(text => text.toLowerCase())).size !== group.length)) return jsonError('Suggestions must be unique within each stage.',400);
   await c.env.DB.prepare('INSERT INTO settings (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').bind('photo_hunt',JSON.stringify(phases)).run();
