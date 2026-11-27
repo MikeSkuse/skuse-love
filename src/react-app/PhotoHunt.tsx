@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { photoHuntPhases } from '../shared/photo-hunt';
+import { photoHuntPhases, shuffleSuggestions } from '../shared/photo-hunt';
 
 type Completed = { phase: number; text: string };
 const storageKey = 'wedding-photo-hunt-completed-v1';
@@ -14,12 +14,13 @@ export default function PhotoHunt({ phase }: { phase: number }) {
   const [suggestions, setSuggestions] = useState<string[][] | null>(null);
   const [completed, setCompleted] = useState<Completed[]>(loadCompleted);
   const [error, setError] = useState(false);
+  const listVersion = useRef('');
   useEffect(() => {
     const controller = new AbortController();
     const load = () => fetch('/api/photo-hunt', { signal: controller.signal }).then(response => {
       if (!response.ok) throw Error();
       return response.json() as Promise<string[][]>;
-    }).then(data => { setSuggestions(data); setError(false); }).catch(() => { if (!controller.signal.aborted) setError(true); });
+    }).then(data => { const version = JSON.stringify(data); if (version !== listVersion.current) { listVersion.current = version; setSuggestions(data.map(group => shuffleSuggestions(group))); } setError(false); }).catch(() => { if (!controller.signal.aborted) setError(true); });
     void load();
     const timer = window.setInterval(load, 30000);
     return () => { controller.abort(); window.clearInterval(timer); };
