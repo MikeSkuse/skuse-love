@@ -39,7 +39,7 @@ export default function Bingo() {
   const bingo = lines && lines.some(line => line.every(index => board!.marked.includes(index)));
   return <div className="bingo-page">
     <header className="page-header"><span className="eyebrow">A LITTLE WEDDING DAY MAGIC</span><h1>Wedding Bingo</h1><div className="ornament" aria-hidden="true">✦ <span>✧</span> ✦</div></header>
-    <p className="intro">Keep your eyes peeled! Tap a square when you spot it. Complete a row, column or diagonal to get bingo.</p>
+    <p className="intro">Tap a square when you spot it. Complete a row, column or diagonal to get bingo.</p>
     {error ? <p role="alert" className="note">{error}</p> : !board ? <p className="note" role="status">Creating your bingo board…</p> : <><p className="bingo-status" role="status">{bingo ? 'Bingo! You completed a line! ✨' : `${board.marked.length} of 16 squares marked`}</p><div className="bingo-grid" aria-label="Your wedding bingo board">{board.entries.map((entry, index) => <button type="button" key={index} aria-pressed={board.marked.includes(index)} className={board.marked.includes(index) ? 'marked' : ''} onClick={() => toggle(index)}><span>{entry}</span>{board.marked.includes(index) && <span className="bingo-check" aria-hidden="true">✓</span>}</button>)}</div><p className="note">Your board and progress are saved on this device.</p></>}
   </div>;
 }
