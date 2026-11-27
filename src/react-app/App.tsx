@@ -76,11 +76,13 @@ function Seating(){
 function More(){return <><Header title="A little more"/><p className="intro">Everything else you need for our day together.</p><div className="more-list">{[['/venue','venue','Venue','Getting there and more'],['/faq','faq','FAQs','A few helpful answers'],['/games/photo-hunt','photo-hunt','Photo hunt','Capture the day'],['/games/quiz','quiz','The quiz','How well do you know us?'],['/games/bingo','bingo','Wedding Bingo','Spot the moments of the day']].map(([to,icon,title,sub])=><CardLink key={to} {...{to,icon,title,sub}}/>)}</div></>}
 function Music(){const playlists=[
   ['Guests Assemble','Spotify','https://open.spotify.com/playlist/6vZYVhol8Ap9UGO5z8lUji?si=yCKcI8B-QAWnTltQ1f0AVA'],
+  ['Eva & Bride Entrance','Spotify','  https://open.spotify.com/playlist/2MYqGY1m6qw6rjRorh6Dz6?si=7eL7QdF-Q6295CKmG5gU5w'],
   ['Eva Entrance','Spotify','https://open.spotify.com/playlist/5QOdl1RcNOYGGzoLijAUeS?si=OrXaWvo-Qw-wNCIjFvq8wg'],
   ['Bride Entrance','Spotify','https://open.spotify.com/playlist/0U3TVBR7MtKRkvghSAZEzK?si=0Fiyl3vISCeZv_txlPMo_g'],
   ['Signing Registry','Spotify','https://open.spotify.com/playlist/4LfqvUnRMI8cxOjlUOeV3U?si=pGjFkiwkRFO34jluOfownQ'],
   ['Exit','Spotify','https://open.spotify.com/playlist/4Y2IfLXyWX9Bh19qfxLDPG?si=t-3lY6HAQzqt9mSRwJkD4w'],
   ['Wedding Breakfast','YouTube Music','https://music.youtube.com/playlist?list=PLMYBHVoqLPqU&si=72W6qeCA2p-4NvE7&drli=1'],
+  ['Wedding Breakfast', 'Spotify', 'https://open.spotify.com/playlist/50wIaeIqXazs3OObTEEtYl?si=H-aVI4JBSwaFvUoD05Gb5Q']
 ];return <><Header title="Music"/><p className="intro">The playlists for our day.</p><div className="more-list">{playlists.map(([title,service,url])=><a className="shortcut" key={title} href={url}><span className="shortcut-icon"><Icon name="music"/></span><span><strong>{title}</strong><small>Listen on {service}</small></span><span className="arrow" aria-hidden="true">›</span></a>)}</div></>}
 function Placeholder({title,text}:{title:string,text:string}){return <><Header title={title}/><div className="empty"><div>✧</div><h2>Coming soon</h2><p>{text}</p></div></>}
 function Venue(){
