@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 
-export default function PrizeClaim({ game }: { game: 'bingo' | 'photo-hunt' }) {
+export default function PrizeClaim({ game }: { game: 'bingo' | 'photo-hunt' | 'quiz' }) {
   const key = `wedding-prize-${game}`;
   const [claim] = useState(() => {
     try {

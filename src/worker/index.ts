@@ -50,7 +50,7 @@ app.post('/api/prize-claims', async c => {
   const ip = c.req.header('CF-Connecting-IP') || 'unknown';
   if (await limited(c.env.DB, `prize:${ip}`, 60)) return jsonError('Please try again later.',429);
   const body = await c.req.json<{id?:unknown,game?:unknown,name?:unknown}>().catch(() => null);
-  if (!body || typeof body.id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.id) || (body.game !== 'bingo' && body.game !== 'photo-hunt') || typeof body.name !== 'string' || !body.name.trim() || body.name.trim().length > 100) return jsonError('Enter a valid name.',400);
+  if (!body || typeof body.id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.id) || (body.game !== 'bingo' && body.game !== 'photo-hunt' && body.game !== 'quiz') || typeof body.name !== 'string' || !body.name.trim() || body.name.trim().length > 100) return jsonError('Enter a valid name.',400);
   await c.env.DB.prepare('INSERT INTO prize_claims (id,game,guest_name) VALUES (?,?,?) ON CONFLICT(id) DO NOTHING').bind(body.id,body.game,body.name.trim()).run();
   return c.json({ok:true});
 });

@@ -24,11 +24,13 @@ test('prize claims validate, record once on retry, and require admin access to r
   const id = '3f1c79fd-6aae-4952-b993-856e599b6a04';
   const post = body => app.request('/api/prize-claims', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, env);
   assert.equal((await post({ id, game: 'bingo', name: '  ' })).status, 400);
-  assert.equal((await post({ id, game: 'quiz', name: 'Anna' })).status, 400);
+  assert.equal((await post({ id, game: 'other', name: 'Anna' })).status, 400);
   assert.equal((await post({ id, game: 'bingo', name: ' Anna ' })).status, 200);
   assert.equal((await post({ id, game: 'bingo', name: 'Anna' })).status, 200);
+  const quizId = '28e3c75b-0813-4eea-9b6d-09b9705cb65d';
+  assert.equal((await post({ id: quizId, game: 'quiz', name: 'Mike' })).status, 200);
   assert.equal((await app.request('/api/admin/prize-claims', {}, env)).status, 401);
   const response = await app.request('/api/admin/prize-claims', { headers: { Authorization: 'Bearer test-token' } }, env);
   assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), [{ game: 'bingo', guest_name: 'Anna', created_at: '2026-11-29 15:00:00' }]);
+  assert.deepEqual(await response.json(), [{ game: 'bingo', guest_name: 'Anna', created_at: '2026-11-29 15:00:00' }, { game: 'quiz', guest_name: 'Mike', created_at: '2026-11-29 15:00:00' }]);
 });

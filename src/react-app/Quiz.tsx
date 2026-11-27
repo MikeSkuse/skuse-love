@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import PrizeClaim from './PrizeClaim';
 
 const questions = [
   { question: 'When did Mike and Anna first meet?', answers: ['February 2021', 'June 2022', 'November 2022', 'January 2023'], correct: 'November 2022', feedback: 'Mike and Anna first met in November 2022, almost exactly four years before their wedding!' },
@@ -62,6 +63,7 @@ export default function Quiz() {
       <div className="quiz-sparkle" aria-hidden="true">✦</div><span className="eyebrow">YOUR RESULTS</span>
       <p className="quiz-final-score">{score}<span> / {questions.length}</span></p><p className="quiz-percentage">{score * 10}% correct</p>
       <h2 id="quiz-result-title">{resultTitle}</h2><p>{resultMessage}</p>
+      {score >= 8 && <PrizeClaim game="quiz"/>}
       <button className="quiz-primary" type="button" onClick={restart}>Play again</button><Link className="quiz-home" to="/">Return to the wedding homepage</Link>
     </section> : <>
       <div className="quiz-progress"><div><span>Question {index + 1} of {questions.length}</span><strong>Score: {score}</strong></div><div className="quiz-progress-track" role="progressbar" aria-label="Quiz progress" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={index + (selected !== null ? 1 : 0)}><div style={{ width: `${(index + (selected !== null ? 1 : 0)) * 10}%` }}/></div></div>
