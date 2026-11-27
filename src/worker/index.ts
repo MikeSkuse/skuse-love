@@ -1,4 +1,5 @@
-﻿import { Hono } from "hono";
+import { Hono } from "hono";
+import { defaultBingoEntries } from "./bingo";
 import { uploadToWeddingWall } from "./wedding-wall";
 import { latestWallPhotos, wallPhoto } from "./wall-gallery";
 
@@ -20,6 +21,18 @@ app.use('/api/admin/*', async (c, next) => {
   await next();
 });
 app.get('/api/settings', async c => { const rows = await c.env.DB.prepare('SELECT key,value FROM settings').all<{key:string,value:string}>(); return c.json(Object.fromEntries(rows.results.map(x => [x.key,x.value]))); });
+app.get('/api/bingo', async c => {
+  const row = await c.env.DB.prepare('SELECT value FROM settings WHERE key=?').bind('bingo_entries').first<{value:string}>();
+  return c.json(row ? JSON.parse(row.value) : defaultBingoEntries);
+});
+app.put('/api/admin/bingo', async c => {
+  const body = await c.req.json<{entries?:unknown}>().catch(() => ({} as {entries?:unknown}));
+  if (!body || !Array.isArray(body.entries) || body.entries.length < 16 || body.entries.length > 200 || body.entries.some((entry: unknown) => typeof entry !== 'string' || !entry.trim() || entry.trim().length > 100)) return jsonError('Provide 16 to 200 entries, each up to 100 characters.',400);
+  const entries = body.entries.map((entry: string) => entry.trim());
+  if (new Set(entries.map((entry: string) => entry.toLocaleLowerCase())).size !== entries.length) return jsonError('Each bingo entry must be unique.',400);
+  await c.env.DB.prepare('INSERT INTO settings (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').bind('bingo_entries',JSON.stringify(entries)).run();
+  return c.json({ok:true});
+});
 app.post('/api/seating', async c => {
   const ip = c.req.header('CF-Connecting-IP') || 'unknown';
   if (await limited(c.env.DB, `seat:${ip}`, 20)) return jsonError('Please try again later.',429);
